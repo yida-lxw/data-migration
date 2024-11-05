@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- status="debug" 可以查看log4j的装配过程-->
+<!-- status="OFF"，可以去掉，它的含义为是否记录log4j2本身的event信息，默认是OFF -->
+<Configuration status="OFF" xmlns:log4j='http://jakarta.apache.org/log4j/2.x/'>
+    <Properties>
+        <!-- All < Trace < Debug < Info < Warn < Error < Fatal -->
+        <!-- 日志Debug输出级别 -->
+        <Property name="LOG_LEVEL_DEBUG" value="debug"/>
+        <!-- 日志Info输出级别 -->
+        <Property name="LOG_LEVEL_INFO" value="info"/>
+        <!-- 日志Warn输出级别 -->
+        <Property name="LOG_LEVEL_WARN" value="warn"/>
+        <!-- 日志Error输出级别 -->
+        <Property name="LOG_LEVEL_ERROR" value="error"/>
+        <!-- 日志文件输出根目录 -->
+        <Property name="LOG_BASEPATH">${sys:user.dir}/logs</Property>
+        <!-- 日志文件压缩归档后输出根目录 -->
+        <Property name="LOG_ARCHIVE_BASEPATH">${sys:user.dir}/logs/archive</Property>
+        <!--interval属性用来指定多久滚动一次-->
+        <Property name="TIME_BASED_INTERVAL" value="1"/>
+        <!-- 日志文件大小，超过这个大小将被压缩 -->
+        <Property name="LOG_MAX_SIZE" value="100 MB"/>
+        <!-- 保留30天以内的日志 -->
+        <Property name="LOG_RENTATION_DAYS" value="30"/>
+        <!-- 日志打印格式 -->
+        <Property name="LOG_PATTERN_LAYOUT"
+                  value="[%d{yyyy-MM-dd HH:mm:ss}]-[%-5level]-[%class{36}.%M()]:[Line:%L]-[Thread_%t] - {%msg}%xEx%n"/>
+        <!-- 是否开启日志同步刷盘,true=同步刷盘,false=异步刷盘,若不配置的话，默认就是同步刷盘-->
+        <Property name="LOG_SYNC_FLUSH" value="false"/>
+        <!-- 是否开启在日志中打印类名称/方法名称/代码行号等信息，true=开启，false=不开启，默认为false -->
+        <Property name="INCLUDE_LOCATION" value="true"/>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_PATTERN_LAYOUT}"/>
+        </Console>
+
+        <!-- 打印debug级别日志，每次大小超过size或者满足TimeBasedTriggeringPolicy，则日志会自动存入按年月日建立的文件夹下面并进行压缩，作为归档-->
+        <RollingRandomAccessFile name="RollingRandomAccessFileDebug"
+                                 fileName="${LOG_BASEPATH}/debug.log"
+                                 filePattern="${LOG_ARCHIVE_BASEPATH}/debug-%d{yyyy-MM-dd}-%i.log.gz"
+                                 immediateFlush="${LOG_ASYNC_FLUSH}">
+            <Filters>
+                <!--如果是error级别拒绝，设置 onMismatch="NEUTRAL" 可以让日志经过后续的过滤器-->
+                <ThresholdFilter level="${LOG_LEVEL_ERROR}" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="${LOG_LEVEL_WARN}" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="${LOG_LEVEL_INFO}" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <!--如果是debug输出-->
+                <ThresholdFilter level="${LOG_LEVEL_DEBUG}" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${LOG_PATTERN_LAYOUT}"/>
+            <Policies>
+                <!--interval属性用来指定多久滚动一次，根据当前filePattern设置是1天滚动一次-->
+                <TimeBasedTriggeringPolicy interval="${TIME_BASED_INTERVAL}"/>
+                <SizeBasedTriggeringPolicy size="${LOG_MAX_SIZE}"/>
+            </Policies>
+            <!-- DefaultRolloverStrategy属性如不设置，则默认同一文件夹下最多保存7个文件-->
+            <DefaultRolloverStrategy max="${LOG_RENTATION_DAYS}"/>
+        </RollingRandomAccessFile>
+
+        <!-- 打印info级别日志，每次大小超过size或者满足TimeBasedTriggeringPolicy，则日志会自动存入按年月日建立的文件夹下面并进行压缩，作为归档-->
+        <RollingRandomAccessFile name="RollingRandomAccessFileInfo"
+                                 fileName="${LOG_BASEPATH}/info.log"
+                                 filePattern="${LOG_ARCHIVE_BASEPATH}/info-%d{yyyy-MM-dd}-%i.log.gz"
+                                 immediateFlush="${LOG_ASYNC_FLUSH}">
+            <Filters>
+                <!--如果是error级别拒绝，设置 onMismatch="NEUTRAL" 可以让日志经过后续的过滤器-->
+                <ThresholdFilter level="${LOG_LEVEL_ERROR}" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="${LOG_LEVEL_WARN}" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <!--如果是info输出-->
+                <ThresholdFilter level="${LOG_LEVEL_INFO}" onMatch="ACCEPT" onMismatch="DENY"/>
+                <ThresholdFilter level="${LOG_LEVEL_DEBUG}" onMatch="DENY" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${LOG_PATTERN_LAYOUT}"/>
+            <Policies>
+                <!--interval属性用来指定多久滚动一次，根据当前filePattern设置是1天滚动一次-->
+                <TimeBasedTriggeringPolicy interval="${TIME_BASED_INTERVAL}"/>
+                <SizeBasedTriggeringPolicy size="${LOG_MAX_SIZE}"/>
+            </Policies>
+            <!-- DefaultRolloverStrategy属性如不设置，则默认同一文件夹下最多保存7个文件-->
+            <DefaultRolloverStrategy max="${LOG_RENTATION_DAYS}"/>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="RollingRandomAccessFileWarn"
+                                 fileName="${LOG_BASEPATH}/warn.log"
+                                 filePattern="${LOG_ARCHIVE_BASEPATH}/warn-%d{yyyy-MM-dd}-%i.log.gz"
+                                 immediateFlush="${LOG_ASYNC_FLUSH}">
+            <Filters>
+                <ThresholdFilter level="${LOG_LEVEL_ERROR}" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="${LOG_LEVEL_WARN}" onMatch="ACCEPT" onMismatch="DENY"/>
+                <ThresholdFilter level="${LOG_LEVEL_INFO}" onMatch="DENY" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${LOG_PATTERN_LAYOUT}"/>
+            <Policies>
+                <!--interval属性用来指定多久滚动一次，根据当前filePattern设置是1天滚动一次-->
+                <TimeBasedTriggeringPolicy interval="${TIME_BASED_INTERVAL}"/>
+                <SizeBasedTriggeringPolicy size="${LOG_MAX_SIZE}"/>
+            </Policies>
+            <!-- DefaultRolloverStrategy属性如不设置，则默认同一文件夹下最多保存7个文件-->
+            <DefaultRolloverStrategy max="${LOG_RENTATION_DAYS}"/>
+        </RollingRandomAccessFile>
+
+        <!--只记录error级别以上的日志，与info级别的日志分不同的文件保存-->
+        <RollingRandomAccessFile name="RollingRandomAccessFileError"
+                                 fileName="${LOG_BASEPATH}/error.log"
+                                 filePattern="${LOG_ARCHIVE_BASEPATH}/error-%d{yyyy-MM-dd}-%i.log.gz"
+                                 immediateFlush="${LOG_ASYNC_FLUSH}">
+            <Filters>
+                <ThresholdFilter level="${LOG_LEVEL_ERROR}" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <PatternLayout pattern="${LOG_PATTERN_LAYOUT}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="${TIME_BASED_INTERVAL}"/>
+                <SizeBasedTriggeringPolicy size="${LOG_MAX_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${LOG_RENTATION_DAYS}"/>
+        </RollingRandomAccessFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.yida" level="${LOG_LEVEL_INFO}" additivity="false" includeLocation="${INCLUDE_LOCATION}">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingRandomAccessFileInfo"/>
+            <AppenderRef ref="RollingRandomAccessFileWarn"/>
+            <AppenderRef ref="RollingRandomAccessFileError"/>
+        </Logger>
+        <Root level="${LOG_LEVEL_INFO}" additivity="false" includeLocation="${INCLUDE_LOCATION}">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingRandomAccessFileInfo"/>
+            <AppenderRef ref="RollingRandomAccessFileWarn"/>
+            <AppenderRef ref="RollingRandomAccessFileError"/>
+        </Root>
+    </Loggers>
+</Configuration>

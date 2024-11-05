@@ -1,0 +1,92 @@
+app:
+  root-path: ${user.dir}
+  pid-path: ${user.dir}/app.pid
+
+logging:
+  config: classpath:log4j2.xml
+
+lucene:
+  schedule-task:
+    thread-pool:
+      core-pool-size: 2
+      max-pool-size: 4
+      queue-capacity: 1024
+      keep-alive-seconds: 10
+      pool-prefix: lucene-schedule-task-thread-pool_
+      wait-for-tasks-to-complete-on-shutdown: true
+      reject-policy: discard-oldest
+  index-read:
+    version: 7.7.3
+    index-basedir: F:/dossier
+    enable-NRTReader: true
+    page-size: 2000
+    thread-pool:
+      core-pool-size: 8
+      max-pool-size: 32
+      queue-capacity: 1024
+      keep-alive-seconds: 10
+      pool-prefix: lucene-index-read-thread-pool_
+      reject-policy: discard-oldest
+
+
+elasticsearch:
+  server:
+    host: localhost
+    port: 9200
+    protocol: http
+    username:
+    password:
+  index:
+    index-name: building_web_file_upload
+    primary-field: id
+    shards-num: 3
+    replicas-num: 2
+    batch-size: 1000
+    create-on-duplicated: false
+    fields:
+      -
+        fieldName: id
+        fieldType: keyword
+        store: true
+      -
+        fieldName: type
+        fieldType: keyword
+        store: true
+      -
+        fieldName: title
+        fieldType: text
+        store: true
+        anaylzer: ik_max_word
+      -
+        fieldName: content
+        fieldType: text
+        store: true
+        anaylzer: ik_max_word
+      -
+        fieldName: recordId
+        fieldType: keyword
+        store: true
+      -
+        fieldName: recordName
+        fieldType: keyword
+        store: true
+      -
+        fieldName: fileId
+        fieldType: keyword
+        store: true
+      -
+        fieldName: fileName
+        fieldType: keyword
+        store: true
+      -
+        fieldName: archivesId
+        fieldType: keyword
+        store: true
+      -
+        fieldName: archivesName
+        fieldType: keyword
+        store: true
+
+
+
+
